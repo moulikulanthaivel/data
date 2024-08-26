@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import {Link} from 'react-router-dom'
+import { useState } from 'react';
+import {Link , useNavigate} from 'react-router-dom';
 
 export default function SignUp() {
 
   const [formData , setFormdata] = useState({});
   const [loading , setLoading] = useState(false);
   const [error , setError] = useState(false);
+  const navigate = useNavigate();
   const handlechange = (e)=>{
       setFormdata({...formData , [e.target.id]:e.target.value });
   }
@@ -25,21 +26,17 @@ export default function SignUp() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log(data);  {msg : 'user created sucesfully'}
       if(data.success === false){
         setError(true)
         return;
       }
-
+      navigate("/signin")
     } catch (error) {
       setLoading(false)
       setError(true)
     }finally{
       setLoading(false)
     }
-
-
-
   }
 
   return (
@@ -49,7 +46,7 @@ export default function SignUp() {
         <input type="text" placeholder='username' id='username' className='p-3 rounded-lg' onChange={handlechange}/>
         <input type="email" placeholder='email' id='email' className='p-3 rounded-lg'onChange={handlechange}/>
         <input type="password" placeholder='password' id='password'className='p-3 rounded-lg' onChange={handlechange}/>
-        <button className='p-3 rounded-lg uppercase bg-slate-800 text-white hover:opacity-90 disabled:opacity-80' onClick={setLoading}> {loading? 'Loading...' : 'signup'} </button>
+        <button disabled={loading} className='p-3 rounded-lg uppercase bg-slate-800 text-white hover:opacity-90 disabled:opacity-80'> {loading? 'Loading...' : 'signup'} </button>
       </form>
       <div className='flex gap-2 mt-4'>
         <p>Have an account?</p>

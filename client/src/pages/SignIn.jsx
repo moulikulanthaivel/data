@@ -1,64 +1,81 @@
-import { useState } from 'react'
-import {Link} from 'react-router-dom'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function SignIn() {
+  const [formData, setFormdata] = useState({});
+  const { loading, error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const [formData , setFormdata] = useState({});
-  const [loading , setLoading] = useState(false);
-  const [error , setError] = useState(false);
-  const handlechange = (e)=>{
-      setFormdata({...formData , [e.target.id]:e.target.value });
-  }
-  
-  const handlesubmit = async(e)=>{
+  const handlechange = (e) => {
+    setFormdata({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handlesubmit = async (e) => {
     e.preventDefault();
-    
-    try {
-      setLoading(true)
-      setError(false)
 
-      const  res = await fetch("/api/auth/signin", {
-        method:'POST',
-        headers:{
+    try {
+      dispatch(signInStart());
+
+      const res = await fetch("/api/auth/signin", {
+        method: 'POST',
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
-      console.log(data);  {msg : 'user created sucesfully'}
-      if(data.success === false){
-        setError(true)
+
+      if (data.success === false) {
+        dispatch(signInFailure({ message: data.message || 'Sign-in failed' }));
         return;
       }
 
+      dispatch(signInSuccess(data));
+      navigate("/");
     } catch (error) {
-      setLoading(false)
-      setError(true)
-    }finally{
-      setLoading(false)
+      dispatch(signInFailure({ message: 'Network error' }));
     }
-  }
+  };
 
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Sign In</h1>
 
       <form className='flex flex-col gap-4' onSubmit={handlesubmit}>
-
-        <input type="email" placeholder='email' id='email' className='p-3 rounded-lg'onChange={handlechange}/>
-
-        <input type="password" placeholder='password' id='password'className='p-3 rounded-lg' onChange={handlechange}/>
-
-        <button className='p-3 rounded-lg uppercase bg-slate-800 text-white hover:opacity-90 disabled:opacity-80' onClick={setLoading}> {loading? 'Loading...' : 'sign in'} </button>
-
+        <input
+          type="email"
+          placeholder='Email'
+          id='email'
+          className='p-3 rounded-lg'
+          onChange={handlechange}
+        />
+        <input
+          type="password"
+          placeholder='Password'
+          id='password'
+          className='p-3 rounded-lg'
+          onChange={handlechange}
+        />
+        <button
+          disabled={loading}
+          className='p-3 rounded-lg uppercase bg-slate-800 text-white hover:opacity-90 disabled:opacity-80'
+        >
+          {loading ? 'Loading...' : 'Sign In'}
+        </button>
       </form>
+
       <div className='flex gap-2 mt-4'>
-        <p>Dont have an account?</p>
+        <p>Don't have an account?</p>
         <Link to='/signup'>
-        <span className='text-blue-800'>Sign up</span>
+          <span className='text-blue-800'>Sign up</span>
         </Link>
-      </div> 
-      <p className='text-red-700 mt-5'>{error && 'something went  wrong!'}</p>
+      </div>
+
+      {error && <p className='text-red-700 mt-5'>{error.message}</p>}
     </div>
-  )
+  );
 }
