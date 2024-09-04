@@ -7,6 +7,7 @@ export default function SignUp() {
   const [loading , setLoading] = useState(false);
   const [error , setError] = useState(false);
   const navigate = useNavigate();
+
   const handlechange = (e)=>{
       setFormdata({...formData , [e.target.id]:e.target.value });
   }
@@ -25,18 +26,21 @@ export default function SignUp() {
         },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
       if(data.success === false){
         setError(true)
         return;
       }
       navigate("/signin")
+      
     } catch (error) {
       setLoading(false)
       setError(true)
     }finally{
       setLoading(false)
     }
+
   }
 
   return (
